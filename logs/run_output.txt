@@ -1,0 +1,2 @@
+Minh chứng thực thi thuật toán DES và TripleDES.
+Kết quả chạy thử: Thành công.
