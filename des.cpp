@@ -62,8 +62,10 @@ private:
     }
 
 public:
+    KeyGenerator() {}
     KeyGenerator(const string& input_key) : key(input_key) {}
-    void generateRoundKeys() {
+    void generateRoundKeys(const string& input_key) {
+        key = input_key;
         roundKeys.clear();
         string permKey = "";
         for (int i = 0; i < 56; ++i) permKey += key[pc1[i] - 1];
@@ -120,42 +122,65 @@ public:
         }
         return inverse_initial_permutation(R + L);
     }
+
+    // Hàm mã hóa hỗ trợ Padding và Multi-block
+    string encrypt(string message, string key) {
+        KeyGenerator kg;
+        kg.generateRoundKeys(key);
+        vector<string> roundKeys = kg.getRoundKeys();
+
+        // Zero Padding
+        while (message.length() % 64 != 0) message += "0";
+
+        string ciphertext = "";
+        for (size_t i = 0; i < message.length(); i += 64) {
+            ciphertext += processBlock(message.substr(i, 64), roundKeys);
+        }
+        return ciphertext;
+    }
+
+    // Hàm giải mã
+    string decrypt(string message, string key) {
+        KeyGenerator kg;
+        kg.generateRoundKeys(key);
+        vector<string> roundKeys = kg.getRoundKeys();
+        reverse(roundKeys.begin(), roundKeys.end());
+
+        string plaintext = "";
+        for (size_t i = 0; i < message.length(); i += 64) {
+            plaintext += processBlock(message.substr(i, 64), roundKeys);
+        }
+        return plaintext;
+    }
 };
 
 // --- Triple DES Logic ---
 string runTripleDES(string input, string k1, string k2, string k3, bool encryptMode) {
-    KeyGenerator kg1(k1), kg2(k2), kg3(k3);
-    kg1.generateRoundKeys(); kg2.generateRoundKeys(); kg3.generateRoundKeys();
-    
-    vector<string> keys1 = kg1.getRoundKeys();
-    vector<string> keys2 = kg2.getRoundKeys();
-    vector<string> keys3 = kg3.getRoundKeys();
-    
     DES core;
     if (encryptMode) {
         // E(K3, D(K2, E(K1, P)))
-        string s1 = core.processBlock(input, keys1);
-        reverse(keys2.begin(), keys2.end());
-        string s2 = core.processBlock(s1, keys2);
-        return core.processBlock(s2, keys3);
+        string s1 = core.encrypt(input, k1);
+        string s2 = core.decrypt(s1, k2);
+        return core.encrypt(s2, k3);
     } else {
         // D(K1, E(K2, D(K3, C)))
-        reverse(keys3.begin(), keys3.end());
-        string s1 = core.processBlock(input, keys3);
-        string s2 = core.processBlock(s1, keys2);
-        reverse(keys1.begin(), keys1.end());
-        return core.processBlock(s2, keys1);
+        string s1 = core.decrypt(input, k3);
+        string s2 = core.encrypt(s1, k2);
+        return core.decrypt(s2, k1);
     }
 }
 
 int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+    
     int mode;
     if (!(cin >> mode)) return 0;
 
     string input, k1, k2, k3;
 
     if (mode == 1 || mode == 2) {
-        cin >> input >> k1;
+        if (!(cin >> input >> k1)) return 0;
         DES des; 
         if (mode == 1) {
             cout << des.encrypt(input, k1) << endl; 
@@ -164,7 +189,7 @@ int main() {
         }
     } 
     else if (mode == 3 || mode == 4) {
-        cin >> input >> k1 >> k2 >> k3;
+        if (!(cin >> input >> k1 >> k2 >> k3)) return 0;
         if (mode == 3) {
             cout << runTripleDES(input, k1, k2, k3, true) << endl; 
         } else {
