@@ -171,15 +171,13 @@ string runTripleDES(string input, string k1, string k2, string k3, bool encryptM
 }
 
 int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-    
     int mode;
     if (!(cin >> mode)) return 0;
 
     string input, k1, k2, k3;
 
     if (mode == 1 || mode == 2) {
+        // Nhập input và khóa trên các dòng khác nhau hoặc cùng dòng đều được
         if (!(cin >> input >> k1)) return 0;
         DES des; 
         if (mode == 1) {
