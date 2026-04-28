@@ -150,32 +150,37 @@ string runTripleDES(string input, string k1, string k2, string k3, bool encryptM
 
 int main() {
     int mode;
+    // Bước 1: Nhập Mode (1: DES Enc, 2: DES Dec, 3: 3DES Enc, 4: 3DES Dec)
     if (!(cin >> mode)) return 0;
 
-    if (mode == 1 || mode == 2) { // DES Encrypt/Decrypt
-        string input, key;
-        cin >> input >> key;
-        
-        if (mode == 1) { // Q2: Padding for Encryption
-            while(input.length() % 64 != 0) input += "0";
-        }
+    string input, k1, k2, k3;
 
-        KeyGenerator kg(key);
-        kg.generateRoundKeys();
-        vector<string> keys = kg.getRoundKeys();
-        if (mode == 2) reverse(keys.begin(), keys.end()); // Q3: Decryption keys
+    if (mode == 1 || mode == 2) {
+        // Bước 2: Nhập chuỗi bit (Plaintext hoặc Ciphertext)
+        cin >> input;
+        // Bước 3: Nhập Key 64-bit
+        cin >> k1;
 
-        DES des;
-        string result = "";
-        for (size_t i = 0; i < input.length(); i += 64) {
-            result += des.processBlock(input.substr(i, 64), keys);
+        DES des(k1);
+        if (mode == 1) {
+            // Xử lý Multi-block và Padding đã viết ở các hàm trên
+            cout << des.encrypt_message(input) << endl;
+        } else {
+            cout << des.decrypt_message(input) << endl;
         }
-        cout << result << endl;
     } 
-    else if (mode == 3 || mode == 4) { // Q4: TripleDES
-        string input, k1, k2, k3;
-        cin >> input >> k1 >> k2 >> k3;
-        cout << runTripleDES(input, k1, k2, k3, mode == 3) << endl;
+    else if (mode == 3 || mode == 4) {
+        // Bước 2: Nhập chuỗi bit
+        cin >> input;
+        // Bước 3: Nhập 3 Key cho TripleDES
+        cin >> k1 >> k2 >> k3;
+
+        TripleDES tdes(k1, k2, k3);
+        if (mode == 3) {
+            cout << tdes.encrypt(input) << endl;
+        } else {
+            cout << tdes.decrypt(input) << endl;
+        }
     }
 
     return 0;
