@@ -150,38 +150,26 @@ string runTripleDES(string input, string k1, string k2, string k3, bool encryptM
 
 int main() {
     int mode;
-    // Bước 1: Nhập Mode (1: DES Enc, 2: DES Dec, 3: 3DES Enc, 4: 3DES Dec)
     if (!(cin >> mode)) return 0;
 
     string input, k1, k2, k3;
 
     if (mode == 1 || mode == 2) {
-        // Bước 2: Nhập chuỗi bit (Plaintext hoặc Ciphertext)
-        cin >> input;
-        // Bước 3: Nhập Key 64-bit
-        cin >> k1;
-
-        DES des(k1);
+        cin >> input >> k1;
+        DES des; 
         if (mode == 1) {
-            // Xử lý Multi-block và Padding đã viết ở các hàm trên
-            cout << des.encrypt_message(input) << endl;
+            cout << des.encrypt(input, k1) << endl; 
         } else {
-            cout << des.decrypt_message(input) << endl;
+            cout << des.decrypt(input, k1) << endl;
         }
     } 
     else if (mode == 3 || mode == 4) {
-        // Bước 2: Nhập chuỗi bit
-        cin >> input;
-        // Bước 3: Nhập 3 Key cho TripleDES
-        cin >> k1 >> k2 >> k3;
-
-        TripleDES tdes(k1, k2, k3);
+        cin >> input >> k1 >> k2 >> k3;
         if (mode == 3) {
-            cout << tdes.encrypt(input) << endl;
+            cout << runTripleDES(input, k1, k2, k3, true) << endl; 
         } else {
-            cout << tdes.decrypt(input) << endl;
+            cout << runTripleDES(input, k1, k2, k3, false) << endl;
         }
     }
-
     return 0;
 }
